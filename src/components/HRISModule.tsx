@@ -2604,7 +2604,7 @@ export default function HRISModule({ employees, assets, orgSettings, onAddEmploy
                   <div className="w-80 bg-white rounded-2xl shadow-xl border border-slate-300 p-6 flex flex-col items-center relative overflow-hidden">
                     {/* NGO Banner */}
                     <div className="w-full bg-slate-900 text-white p-3 rounded-t-xl absolute top-0 left-0 right-0 text-center">
-                      <h4 className="font-extrabold text-xs tracking-wider uppercase text-blue-400">Glow Forward</h4>
+                      <h4 className="font-extrabold text-xs tracking-wider uppercase text-blue-400">{orgSettings?.name || "Organization"}</h4>
                       <p className="text-[8px] text-slate-400 uppercase tracking-widest font-mono">NGO Personnel Card</p>
                     </div>
 

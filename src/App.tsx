@@ -105,6 +105,11 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
 
+  useEffect(() => {
+    const titleName = orgSettings?.name || currentUser?.companyName || "Appan HRM";
+    document.title = `${titleName} - Appan HRM Portal`;
+  }, [orgSettings?.name, currentUser?.companyName]);
+
   // Restore session on mount
   useEffect(() => {
     const restoreSession = async () => {
@@ -411,7 +416,10 @@ export default function App() {
       if (!res.ok) {
         throw new Error(`Settings update failed with status ${res.status}`);
       }
-      fetchAllData();
+      const updatedSettings = await res.json();
+      setOrgSettings(updatedSettings);
+      await fetchAllData();
+      return updatedSettings;
     } catch (err) {
       console.error(err);
       throw err;
@@ -468,9 +476,11 @@ export default function App() {
     );
   }
 
-  // Calculate dynamic acronym and name based on logged in user's company
-  const orgName = currentUser.companyName || orgSettings?.name || "AppanTech";
+  // Calculate dynamic acronym and name based on organization settings first,
+  // then fall back to the authenticated user's company name when settings are empty.
+  const orgName = orgSettings?.name || currentUser?.companyName || "AppanTech";
   const orgAcronym = orgName.split(" ").map((n: string) => n[0]).join("").slice(0, 3).toUpperCase() || "A";
+  const brandLogo = orgSettings?.logoThumbUrl || orgSettings?.logoUrl || "";
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-800 font-sans" id="app-root">
@@ -480,8 +490,12 @@ export default function App() {
         
         {/* NGO Brand Box */}
         <div className="p-5 border-b border-slate-800 bg-slate-950 flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center font-extrabold text-white text-xl shadow-md border border-blue-400">
-            {orgAcronym}
+          <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center overflow-hidden shadow-md border border-blue-400">
+            {brandLogo ? (
+              <img src={brandLogo} alt={`${orgName} logo`} className="h-full w-full object-cover" />
+            ) : (
+              <span className="font-extrabold text-white text-xl">{orgAcronym}</span>
+            )}
           </div>
           <div>
             <h1 className="font-extrabold text-xs uppercase tracking-wider text-slate-100">
@@ -537,8 +551,12 @@ export default function App() {
           
           <aside className="relative flex flex-col w-64 max-w-xs bg-slate-900 text-white p-5 border-r border-slate-800 h-full">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
-              <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center font-extrabold text-white text-xl">
-                {orgAcronym}
+              <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center overflow-hidden font-extrabold text-white text-xl">
+                {brandLogo ? (
+                  <img src={brandLogo} alt={`${orgName} logo`} className="h-full w-full object-cover" />
+                ) : (
+                  <span>{orgAcronym}</span>
+                )}
               </div>
               <div>
                 <h1 className="font-bold text-xs uppercase tracking-wider text-slate-100">

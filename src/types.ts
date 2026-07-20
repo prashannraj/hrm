@@ -174,6 +174,8 @@ export interface OrganizationSettings {
   departments: string[];
   designations: string[];
   leavePolicies: { type: string; allocation: number; cashable: boolean }[];
+  logoUrl?: string;
+  logoThumbUrl?: string;
   ssoConfig?: SsoConfig;
 }
 

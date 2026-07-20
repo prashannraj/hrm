@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { OrganizationSettings } from "../types";
-import { Settings, Save, Sparkles, ShieldCheck, HelpCircle, Layers, ClipboardList, Info } from "lucide-react";
+import { Settings, Save, Sparkles, ShieldCheck, HelpCircle, Layers, ClipboardList, Info, Upload } from "lucide-react";
 
 interface SettingsModuleProps {
   settings: OrganizationSettings | null;
-  onUpdateSettings: (updated: Partial<OrganizationSettings>) => void;
+  onUpdateSettings: (updated: Partial<OrganizationSettings>) => Promise<any> | void;
   currentRole: string;
   onRoleChange: (role: string) => void;
 }
@@ -16,18 +16,95 @@ export default function SettingsModule({ settings, onUpdateSettings, currentRole
   const [email, setEmail] = useState(settings?.email || "");
   const [phone, setPhone] = useState(settings?.phone || "");
   const [regNo, setRegNo] = useState(settings?.registrationNo || "");
+  const [logoUrl, setLogoUrl] = useState(settings?.logoUrl || "");
+  const [logoThumbUrl, setLogoThumbUrl] = useState(settings?.logoThumbUrl || "");
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdateSettings({
-      name: orgName,
-      acronym,
-      registeredAddress: address,
-      email,
-      phone,
-      registrationNo: regNo
+  useEffect(() => {
+    setOrgName(settings?.name || "");
+    setAcronym(settings?.acronym || "");
+    setAddress(settings?.registeredAddress || "");
+    setEmail(settings?.email || "");
+    setPhone(settings?.phone || "");
+    setRegNo(settings?.registrationNo || "");
+    setLogoUrl(settings?.logoUrl || "");
+    setLogoThumbUrl(settings?.logoThumbUrl || "");
+  }, [settings]);
+
+  const createImageThumbnail = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result !== "string") {
+          reject("Invalid logo file");
+          return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+          const size = 120;
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject("Unable to create canvas context");
+            return;
+          }
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, size, size);
+          const ratio = Math.min(size / img.width, size / img.height);
+          const width = img.width * ratio;
+          const height = img.height * ratio;
+          const x = (size - width) / 2;
+          const y = (size - height) / 2;
+          ctx.drawImage(img, x, y, width, height);
+          resolve(canvas.toDataURL("image/png"));
+        };
+        img.onerror = () => reject("Failed to load logo image");
+        img.src = reader.result;
+      };
+      reader.onerror = () => reject("Failed to read logo file");
+      reader.readAsDataURL(file);
     });
-    alert("NGO Organization profile settings successfully saved!");
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const fileReader = new FileReader();
+      fileReader.onload = async () => {
+        if (typeof fileReader.result !== "string") return;
+        const thumb = await createImageThumbnail(file);
+        setLogoUrl(fileReader.result);
+        setLogoThumbUrl(thumb);
+      };
+      fileReader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Logo upload failed", err);
+      alert("Logo upload failed. Please try another image.");
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await onUpdateSettings({
+        name: orgName,
+        acronym,
+        registeredAddress: address,
+        email,
+        phone,
+        registrationNo: regNo,
+        logoUrl: logoUrl || undefined,
+        logoThumbUrl: logoThumbUrl || undefined
+      });
+      alert("NGO Organization profile settings successfully saved!");
+    } catch (err) {
+      console.error(err);
+      alert("Unable to save organization settings. Please try again.");
+    }
   };
 
   if (!settings) return null;
@@ -82,6 +159,26 @@ export default function SettingsModule({ settings, onUpdateSettings, currentRole
           </h3>
 
           <form onSubmit={handleSave} className="space-y-4 text-xs text-slate-600">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4">
+              <div className="h-24 w-24 rounded-2xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center">
+                {logoThumbUrl ? (
+                  <img src={logoThumbUrl} alt="Office logo preview" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-[10px] text-slate-400 uppercase tracking-[0.2em]">Logo Preview</span>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">Office logo settings</p>
+                  <p className="text-[11px] text-slate-500">Upload a PNG/JPG logo and the system will automatically generate a thumbnail for the brand badge.</p>
+                </div>
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold cursor-pointer">
+                  <Upload className="h-4 w-4" />
+                  <span>{logoUrl ? "Change Office Logo" : "Upload Office Logo"}</span>
+                  <input type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleLogoUpload} />
+                </label>
+              </div>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Official NGO Name</label>
