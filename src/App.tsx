@@ -17,7 +17,6 @@ import TravelModule from "./components/TravelModule";
 import AssetModule from "./components/AssetModule";
 import FleetModule from "./components/FleetModule";
 import SettingsModule from "./components/SettingsModule";
-import BlueprintModule from "./components/BlueprintModule";
 import ApplicationGuideModal from "./components/ApplicationGuideModal";
 import RecruitmentModule from "./components/RecruitmentModule";
 import PayrollModule from "./components/PayrollModule";
@@ -441,8 +440,7 @@ export default function App() {
     { id: "assets", label: "Asset Management", icon: ShieldCheck },
     { id: "fleet", label: "Fleet Control", icon: Truck },
     { id: "calendar", label: "BS-AD Cal & Workspaces", icon: Globe },
-    { id: "settings", label: "Office Settings", icon: Settings },
-    { id: "blueprint", label: "Technical Blueprint", icon: Code }
+    { id: "settings", label: "Office Settings", icon: Settings }
   ];
 
   const getPageTitle = () => {
@@ -801,10 +799,6 @@ export default function App() {
                 currentRole={currentRole}
                 onRoleChange={(role) => setCurrentRole(role)}
               />
-            )}
-
-            {activeModule === "blueprint" && (
-              <BlueprintModule />
             )}
           </div>
 

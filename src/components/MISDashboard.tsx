@@ -49,13 +49,6 @@ export default function MISDashboard({ stats, logs, onRefresh, onNavigateTo }: M
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <button
-              onClick={() => onNavigateTo("blueprint")}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold shadow-md transition-all flex items-center gap-1.5"
-            >
-              Inspect Developer Codebase
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-            <button
               onClick={handleRefresh}
               className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition-all flex items-center gap-1.5"
             >
